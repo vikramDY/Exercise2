@@ -1,0 +1,57 @@
+1) Generally, 100-500 coupons will be active. So, we will keep those active coupons in CouponMaster. Other coupons can be removed from the table through any automatic JOB
+2) To keep the 'N' number of Redemptions, we can have DB other then SQL like NoSQL, MongoDB,redshift or any other similar database intergrated with system 
+and SQL DB for data storage, backup, value retrieval feature
+3) If we required to perform search on any flat DB for reporting purpose, we can have elasticsearch or any other such type of indexing/searching mechanism
+4) If system requires redemption coupon count per user very frequently, we can create one more table to keep coupon counts per user.
+5) Since the table is expecting huge data, we can put an archival policy in place and keep only 1day's data in main table and data older then 1 day can be moved to archive table.
+
+CREATE DATABASE [CouponSystem];	
+Go	
+	
+USE [CouponSystem]	
+
+GO	
+	
+CREATE TABLE [dbo].[UserDetail](	
+	[UserDetailId] [uniqueidentifier] NOT NULL PRIMARY KEY DEFAULT NEWID(),
+	[UserName] [nvarchar](100) NOT NULL,
+	[CreatedUserDetailId] [uniqueidentifier] NULL,
+	[DateOfCreation] [datetime] NULL,
+	[IsActive] [bit] NULL
+	) 	
+GO	
+	
+CREATE TABLE [dbo].[CouponMaster](	
+	[CouponMasterId] [uniqueidentifier] NOT NULL PRIMARY KEY DEFAULT NEWID(),
+	[CouponCode] [nvarchar] (50) NOT NULL,
+	[CouponDescription] [nvarchar](500) NOT NULL,
+	[StartDate] [datetime] NOT NULL,
+	[ExpirationDate] [datetime] NOT NULL,
+	[MaxPerUser] [int] NOT NULL,
+	[MaxAllUser] [int] NOT NULL,
+	[CreatedUserDetailId] [uniqueidentifier] NULL,
+	[DateOfCreation] [datetime] NULL,
+	[IsActive] [bit] NULL
+	)	
+GO	
+	
+CREATE TABLE [dbo].[RedemptionMaster](	
+	[RedemptionId] [uniqueidentifier] NOT NULL PRIMARY KEY DEFAULT NEWID(),
+	[UserDetailId] [uniqueidentifier] NOT NULL foreign key references [dbo].[User](UserDetailId),
+	[CouponMasterId] [uniqueidentifier] NOT NULL foreign key references [dbo].[CouponMaster](CouponMasterId),
+	[RedemptionDate] [datetime] NOT NULL,
+	[ApplicationCode] [uniqueidentifier] NOT NULL,
+	[CreatedUserDetailId] [uniqueidentifier] NULL,
+	[DateOfCreation] [datetime] NULL,
+	[IsActive] [bit] NULL
+)	
+
+GO
+
+CREATE INDEX userDetailId_couponMasterId_on_redemption
+ON Redemption (UserDetailId, CouponMasterId);
+
+GO
+
+
+
